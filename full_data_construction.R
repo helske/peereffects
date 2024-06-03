@@ -1,4 +1,4 @@
-#Data preparation code for Helske et al. Heterogeneous workplace peer effects in fathers' parental leave uptake in Finland#
+#Data preparation code for Heterogeneous workplace peer effects in fathers' parental leave uptake in Finland#
 
 #Note that filepaths on D:/ may differ in other projects (file names will remain consistent, however). For paths to own workplace drive, W:/user/ has been used - replace as needed
 
@@ -334,7 +334,7 @@ rm(df); gc()
 
 #Kela parental leave####
 
-#directory of files: D:/e17/external/Kela_data/Kela_vanhempainpäivärahat
+#directory of files: D:/e17/external/Kela_data/Kela_vanhempainp?iv?rahat
 #variables:
 # SAAJA_HETU - ID
 # LAPSI_HETU - child ID
@@ -345,17 +345,17 @@ rm(df); gc()
 # ETOSA - type of benefit
 # JALJ - part of benefit (e.g. if first 18 for fathers)
 
-kela09 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2009_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
-kela10 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2010_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
-kela11 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2011_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
-kela12 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2012_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
-kela13 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2013_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
-kela14 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2014_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
-kela15 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2015_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
-kela16 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2016_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
-kela17 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2017_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
-kela18 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2018_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
-kela19 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainpäivärahat/vanhempainpaivaraha_2019_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela09 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2009_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela10 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2010_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela11 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2011_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela12 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2012_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela13 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2013_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela14 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2014_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela15 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2015_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela16 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2016_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela17 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2017_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela18 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2018_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
+kela19 <- read_dta("D:/f89/external/Kela_data/Kela_vanhempainp?iv?rahat/vanhempainpaivaraha_2019_s.dta", col_select = c("shnro_saaja", "shnro_lapsi", "shnro_puoliso", "maty", "palkm", "yhte", "pamk", "etosa", "jalj", "mapv", "makalpv", "maklopv", "akalpv", "aklopv"))
 
 #create a list with the data.tables in
 l1 <- list(kela09, kela10, kela11, kela12, kela13, kela14, kela15, kela16, kela17, kela18, kela19)
@@ -398,7 +398,7 @@ l2[(as.Date(akalpv) == as.Date(oldak) | as.Date(akalpv) == (as.Date(oldak) + 1)|
 #Check previous row codes for kind of leave
 l2[, c("prevetosa", "prevjalj") := .(shift(etosa, 1), shift(jalj, 1)), by = .(shnro_saaja)]
 #Note, the codes for etosa and jalj can mess with the script everytime it is opened (due to the characters used in the original dataset) - use l2[, levels(etosa)] and then copy the odd character into the relevant places in the script
-l2[marked == 0 & is.na(shnro_lapsi) == TRUE & is.na(lastlaps) == TRUE & etosa == "Ã"R" & prevetosa == "Ã"V" & jalj == "Ã"R" & prevjalj == "Ã"V", marked := NA]
+l2[marked == 0 & is.na(shnro_lapsi) == TRUE & is.na(lastlaps) == TRUE & etosa == "?"R" & prevetosa == "?"V" & jalj == "?"R" & prevjalj == "?"V", marked := NA]
 
 #marks the starting ones
 l2[is.na(marked) == TRUE, marked := 1]
@@ -413,7 +413,7 @@ gc()
 #type of benefit has to be of certain kind
 #this is a bit messed up because of coding - the double commas do not work
 #have to levels(as.factor(etosa)) and then copy it across
-l2 <- l2[etosa %in% c("IR", "IV", "EÃ"", "Ã"R", "Ã"V", "OR", "OV")]
+l2 <- l2[etosa %in% c("IR", "IV", "E?"", "?"R", "?"V", "OR", "OV")]
 gc()
 
 #remove duplicated rows (via start date, end date, number of days, type of benefit)
@@ -481,7 +481,7 @@ l2[, lastlaps := shift(shnro_lapsi, 1), by = .(shnro_saaja)]
 l2[(as.Date(akalpv) == as.Date(oldak) | as.Date(akalpv) == (as.Date(oldak) + 1)| as.Date(oldak) > as.Date(akalpv)) & (shnro_lapsi == lastlaps | is.na(lastlaps) == TRUE), marked := 0]
 
 l2[, c("prevetosa", "prevjalj") := .(shift(etosa, 1), shift(jalj, 1)), by = .(shnro_saaja)]
-l2[marked == 0 & is.na(shnro_lapsi) == TRUE & is.na(lastlaps) == TRUE & etosa == "Ã"R" & prevetosa == "Ã"V" & jalj == "Ã"R" & prevjalj == "Ã"V", marked := NA]
+l2[marked == 0 & is.na(shnro_lapsi) == TRUE & is.na(lastlaps) == TRUE & etosa == "?"R" & prevetosa == "?"V" & jalj == "?"R" & prevjalj == "?"V", marked := NA]
 
 l2[is.na(marked) == TRUE, marked := 1]
 l2[, shnro_lapsi5 := cumsum(marked)]
@@ -518,8 +518,8 @@ remcols <- c("sameMark", "overlap3", "sameMark2", "shnro_lapsi2", "shnro_lapsi3"
 l2[, c(remcols) := NULL]
 
 l2[, rownum := 1:.N]
-l2[jalj == "IÃ"" & is.na(shnro_lapsi) == TRUE, mark3 := 1]
-l2[jalj == "IÃ"" & shnro_lapsi5 != newMark1 & newMark1 == newMark2, mark5 := 1]
+l2[jalj == "I?"" & is.na(shnro_lapsi) == TRUE, mark3 := 1]
+l2[jalj == "I?"" & shnro_lapsi5 != newMark1 & newMark1 == newMark2, mark5 := 1]
 
 l2[, mark3 := nafill(mark3, type = "nocb"), by = .(shnro_saaja)]
 #View(l2[mark3 == 1]) #only 161 obs, so manual fixing - this perhaps could have been automated (And possibly needs to be if more years become available)
@@ -643,7 +643,7 @@ birthReg[kelaparleave[is.na(shnro_lapsActual) == FALSE], on = .(adoptMoth = shnr
 
 birthReg[kelaparleave, on = .(shnro_lapsiM = newshnro), c("motherLeave", "etosaM", "jaljM") := .(i.palkm, i.etosa, i.jalj)]
 birthReg[kelaparleave, on = .(shnro_lapsiF = newshnro), c("fatherLeave", "etosa", "jalj") := .(i.palkm, i.etosa, i.jalj)]
-birthReg[birYear == 2008 & ((etosa == "IV" & jalj == "IV") | (etosa == "IV" & jalj == "IS") | (etosaM == "Ã"V" & jaljM == "Ã"V") | (etosaM == "Ã"R" & jaljM == "Ã"R")), inc08 := 1] #if 2008 birth and either parent on parental leave or mother on maternity, can include
+birthReg[birYear == 2008 & ((etosa == "IV" & jalj == "IV") | (etosa == "IV" & jalj == "IS") | (etosaM == "?"V" & jaljM == "?"V") | (etosaM == "?"R" & jaljM == "?"R")), inc08 := 1] #if 2008 birth and either parent on parental leave or mother on maternity, can include
 birthReg[kelaparleave, on = .(shnro_lapsiAM = newshnro), "admotherLeave" := i.palkm]
 birthReg[kelaparleave, on = .(shnro_lapsiAF = newshnro), "adfatherLeave" := i.palkm]
 
@@ -653,7 +653,7 @@ birthReg[is.na(startDate) == TRUE, startDate := startDate2]
 birthReg[, startDate2 := NULL]
 
 #mark instances of special maternity - this may be due to premature births, pregnancy complications, or because the employment is classed as hazardous and requires pregnant mothers to go on leave early for sake of own and foetal health
-birthReg[kelaparleave[etosa == "EÃ""], on = .(shnro_lapsiM = newshnro), "spec_mat" := 1]
+birthReg[kelaparleave[etosa == "E?""], on = .(shnro_lapsiM = newshnro), "spec_mat" := 1]
 
 birthReg[is.na(shnro_aiti) == FALSE & is.na(motherLeave) == TRUE, motherLeave := 0]
 birthReg[is.na(fatherID) == FALSE & is.na(fatherLeave) == TRUE, fatherLeave := 0]
