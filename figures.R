@@ -1,7 +1,7 @@
 library(dplyr)
 library(ggplot2)
 library(paletteer)
-load("W:/JouniH/peereffects/causal_effects.rda")
+load("causal_effects.rda")
 
 aces$parity
 aces$before_2013_reform_parity
@@ -53,7 +53,7 @@ aces$month_year_education_parity %>% filter(parity == "0") %>%
   facet_wrap(~ education) + xlab("Time") + ylab("Peer effect") +
   scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.spacing.x = unit(25, unit = "pt"))
-ggsave("W:/JouniH/peereffects/figures/peer_effect_first_birth_bw.png",
+ggsave("figures/peer_effect_first_birth_bw.png",
   width = 180, height = 120, unit = "mm", dpi = 300)
 
 # Figure of peer effect  E(leave | do(peer_leave = 1)) - E(leave |do(peer_leave = 0))
@@ -70,7 +70,7 @@ aces$month_year_education_parity %>% filter(parity == "0") %>%
   facet_wrap(~ education) + xlab("Time") + ylab("Peer effect") +
   scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.spacing.x = unit(25, unit = "pt"))
-ggsave("W:/JouniH/peereffects/figures/peer_effect_first_birth_colors.png",
+ggsave("figures/peer_effect_first_birth_colors.png",
   width = 180, height = 120, unit = "mm", dpi = 300)
 
 # Figure with E(leave | do(peer_leave = 1)) and E(leave |do(peer_leave = 0)) ####
@@ -90,7 +90,7 @@ interventional_means %>% filter(parity == "0") %>%
   scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.spacing.x = unit(25, unit = "pt")) +
   ylim(c(0.1, 0.8))
-ggsave("W:/JouniH/peereffects/figures/expected_values_first_birth_bw.png",
+ggsave("figures/expected_values_first_birth_bw.png",
        width = 180, height = 120, unit = "mm", dpi = 300)
 
 interventional_means %>% filter(parity == "0") %>% 
@@ -108,7 +108,7 @@ interventional_means %>% filter(parity == "0") %>%
   scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.spacing.x = unit(25, unit = "pt")) +
   ylim(c(0.1, 0.8))
-ggsave("W:/JouniH/peereffects/figures/expected_values_first_birth_colors.png",
+ggsave("figures/expected_values_first_birth_colors.png",
        width = 180, height = 120, unit = "mm", dpi = 300)
 
 
@@ -125,7 +125,7 @@ aces$past_leaves_education_parity %>%
   geom_pointrange(aes(ymin = q2.5, ymax = q97.5)) +
   xlab("Number of quota users before the peer") + ylab("Peer effect") +
   facet_wrap(~education)
-ggsave("W:/JouniH/peereffects/figures/ace_earlier_first_birth_bw.png",
+ggsave("figures/ace_earlier_first_birth_bw.png",
        width = 180, height = 120, unit = "mm", dpi = 300)
 
 aces$past_leaves_education_parity %>% 
@@ -141,7 +141,7 @@ aces$past_leaves_education_parity %>%
   geom_pointrange(aes(ymin = q2.5, ymax = q97.5), colour = "#990099FF") +
   xlab("Number of quota users before the peer") + ylab("Peer effect") +
   facet_wrap(~education)
-ggsave("W:/JouniH/peereffects/figures/ace_earlier_first_birth_colors.png",
+ggsave("figures/ace_earlier_first_birth_colors.png",
        width = 180, height = 120, unit = "mm", dpi = 300)
 
 
@@ -154,7 +154,7 @@ ace_magnitude_prob %>% filter(parity == "0") %>%
   facet_wrap(~education) +
   scale_fill_grey(start = 0.05, end = 0.95)+
   theme_minimal()
-ggsave("W:/JouniH/peereffects/figures/ace_magnitude_first_birth_bw.png",
+ggsave("figures/ace_magnitude_first_birth_bw.png",
   width = 180, height = 120, unit = "mm", dpi = 300)
 
 
@@ -165,7 +165,7 @@ ace_magnitude_prob %>% filter(parity == "0") %>%
   facet_wrap(~education) +
   scale_fill_paletteer_d("rcartocolor::PurpOr") + 
   theme_minimal()
-ggsave("W:/JouniH/peereffects/figures/ace_magnitude_first_birth_colors.png",
+ggsave("figures/ace_magnitude_first_birth_colors.png",
   width = 180, height = 120, unit = "mm", dpi = 300)
 
 
@@ -179,7 +179,7 @@ aces$timegap_education_parity %>%
   geom_pointrange(aes(ymin = q2.5, ymax = q97.5)) +
   xlab("Time gap") + ylab("Peer effect") +
   facet_wrap(~education)
-ggsave("W:/JouniH/peereffects/figures/ace_by_timegap_first_birth.png",
+ggsave("figures/ace_by_timegap_first_birth.png",
        width = 180, height = 120, unit = "mm", dpi = 300)
 
 
@@ -193,7 +193,7 @@ aces$timegap_education_parity %>%
   geom_pointrange(aes(ymin = q2.5, ymax = q97.5)) +
   xlab("Time gap") + ylab("Peer effect") +
   facet_wrap(~education)
-ggsave("W:/JouniH/peereffects/figures/ace_by_timegap_experienced.png",
+ggsave("figures/ace_by_timegap_experienced.png",
        width = 180, height = 120, unit = "mm", dpi = 300)
 
 ace_magnitude_prob %>% filter(parity == "1+") %>% 
@@ -203,7 +203,7 @@ ace_magnitude_prob %>% filter(parity == "1+") %>%
   facet_wrap(~education) +
   scale_fill_grey(start = 0.05, end = 0.95)+
   theme_minimal()
-ggsave("W:/JouniH/peereffects/figures/ace_magnitude_experienced_bw.png",
+ggsave("figures/ace_magnitude_experienced_bw.png",
   width = 180, height = 120, unit = "mm", dpi = 300)
 
 
@@ -214,7 +214,7 @@ ace_magnitude_prob %>% filter(parity == "1+") %>%
   facet_wrap(~education) +
   scale_fill_paletteer_d("rcartocolor::PurpOr") + 
   theme_minimal()
-ggsave("W:/JouniH/peereffects/figures/ace_magnitude_experienced_colors.png",
+ggsave("figures/ace_magnitude_experienced_colors.png",
   width = 180, height = 120, unit = "mm", dpi = 300)
 
 alpha <- 0.25
@@ -232,7 +232,7 @@ aces$month_year_education_parity %>% filter(parity == "1+") %>%
   facet_wrap(~ education) + xlab("Time") + ylab("Peer effect") +
   scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.spacing.x = unit(25, unit = "pt"))
-ggsave("W:/JouniH/peereffects/figures/peer_effect_experienced_bw.png",
+ggsave("figures/peer_effect_experienced_bw.png",
   width = 180, height = 120, unit = "mm", dpi = 300)
 
 # Figure of peer effect  E(leave | do(peer_leave = 1)) - E(leave |do(peer_leave = 0))
@@ -249,7 +249,7 @@ aces$month_year_education_parity %>% filter(parity == "1+") %>%
   facet_wrap(~ education) + xlab("Time") + ylab("Peer effect") +
   scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.spacing.x = unit(25, unit = "pt"))
-ggsave("W:/JouniH/peereffects/figures/peer_effect_experienced_colors.png",
+ggsave("figures/peer_effect_experienced_colors.png",
   width = 180, height = 120, unit = "mm", dpi = 300)
 
 # Figure with E(leave | do(peer_leave = 1)) and E(leave |do(peer_leave = 0)) ####
@@ -269,7 +269,7 @@ interventional_means %>% filter(parity == "1+") %>%
   scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.spacing.x = unit(25, unit = "pt")) +
   ylim(c(0.1, 0.8))
-ggsave("W:/JouniH/peereffects/figures/expected_values_experienced_bw.png",
+ggsave("figures/expected_values_experienced_bw.png",
        width = 180, height = 120, unit = "mm", dpi = 300)
 
 interventional_means %>% filter(parity == "1+") %>% 
@@ -287,7 +287,7 @@ interventional_means %>% filter(parity == "1+") %>%
   scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.spacing.x = unit(25, unit = "pt")) +
   ylim(c(0.1, 0.8))
-ggsave("W:/JouniH/peereffects/figures/expected_values_experienced_colors.png",
+ggsave("figures/expected_values_experienced_colors.png",
        width = 180, height = 120, unit = "mm", dpi = 300)
 
 
@@ -304,7 +304,7 @@ aces$past_leaves_education_parity %>%
   geom_pointrange(aes(ymin = q2.5, ymax = q97.5)) +
   xlab("Number of quota users before the peer") + ylab("Peer effect") +
   facet_wrap(~education)
-ggsave("W:/JouniH/peereffects/figures/ace_earlier_experienced_bw.png",
+ggsave("figures/ace_earlier_experienced_bw.png",
        width = 180, height = 120, unit = "mm", dpi = 300)
 
 aces$past_leaves_education_parity %>% 
@@ -320,5 +320,5 @@ aces$past_leaves_education_parity %>%
   geom_pointrange(aes(ymin = q2.5, ymax = q97.5), colour = "#990099FF") +
   xlab("Number of quota users before the peer") + ylab("Peer effect") +
   facet_wrap(~education)
-ggsave("W:/JouniH/peereffects/figures/ace_earlier_experienced_colors.png",
+ggsave("figures/ace_earlier_experienced_colors.png",
        width = 180, height = 120, unit = "mm", dpi = 300)

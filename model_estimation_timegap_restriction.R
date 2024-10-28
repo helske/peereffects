@@ -9,7 +9,7 @@ set.seed(chain_id)
 library(mockthat)
 local_mock(`rstan:::is_dir_writable` = function(path) TRUE, mock_env = "rstan")
 
-d <- readRDS("W:/JouniH/peereffects/data.rds") %>% 
+d <- readRDS("data.rds") %>% 
   filter(timegap_months %in% levels(timegap_months)[-(1:4)]) %>% droplevels()
 
 X <- d %>%
@@ -72,7 +72,7 @@ K_past <- length(unique(past_leaves))
 rm(d);gc()
 
 model <- stan_model(
-  "W:/JouniH/peereffects/model.stan",
+  "model.stan",
   allow_optimizations = TRUE
 )
 fit <- sampling(
@@ -98,7 +98,7 @@ fit <- sampling(
   iter = n_samples + n_warmup, warmup = n_warmup, 
   control = list(adapt_delta = 0.95),
   save_warmup = FALSE, include = FALSE,
-  sample_file = paste0("W:/JouniH/peereffects/posterior_samples_timegap_restriction_", chain_id, ".csv"),
+  sample_file = paste0("posterior_samples_timegap_restriction_", chain_id, ".csv"),
 )
-saveRDS(fit, file = paste0("W:/JouniH/peereffects/fit_model_timegap_restriction_", chain_id, ".rds")) 
+saveRDS(fit, file = paste0("fit_model_timegap_restriction_", chain_id, ".rds")) 
 rm(fit);gc()

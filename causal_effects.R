@@ -17,6 +17,9 @@ compute_direct_effects <- function(samples, d, condition_on) {
   beta_past_peer <- posterior::draws_of(samples$beta_past_peer)
   nsim <- nrow(beta)
   rm(samples);gc()
+  # for alternative model with more interaction terms regarding education,
+  # replace these model.matrix calls with the one commented out in 
+  # model_estimation.R
   X0 <- d %>% mutate(peer_leave = 0) %>% 
     model.matrix(
       ~ month + 
@@ -143,7 +146,7 @@ compute_direct_effects <- function(samples, d, condition_on) {
   out
 }
 
-d <- readRDS("W:/JouniH/peereffects/data.rds")
+d <- readRDS("data.rds")
 
 d <- d %>% mutate(
   parity = factor(first_birth, levels = 1:0, labels = c("0", "1+")),
@@ -165,18 +168,25 @@ conditions <- list(
   c("education_difference_partner", "education", "parity"),
   c("partner_higher_income", "education", "parity"),
   c("year", "education", "parity")
+  # additional conditions for interaction model
+  # , c("year", "partner_education2", "education", "parity"),
+  # c("year", "past_leaves", "partner_education2", "education", "parity"),
+  # c("before_2013_reform", "education", "sector", "parity"),
+  # c("past_leaves", "education", "sector", "parity")
 )
 
-source("W:/JouniH/functions_for_stan/readcsv.R")
+# this a faster version of rstan::read_stan_csv
+# but you can use the rstan's version as well.
+source("readcsv.R")
 draws <- read_stan_csv_custom(
-  paste0("W:/JouniH/peereffects/posterior_samples_", 1:4, ".csv")
+  paste0("posterior_samples_", 1:4, ".csv")
 )
 
 samples <- compute_direct_effects(draws, d, condition_on = conditions)
 
 saveRDS(
   samples, 
-  file = "W:/JouniH/peereffects/causal_effect_samples.rds"
+  file = "causal_effect_samples.rds"
 )
 rm(draws)
 qs <- c(0.025, 0.975)
@@ -238,9 +248,20 @@ ace_magnitude_prob <- samples$year_education_parity %>%
     between, levels = 7:1, 
     labels = rev(paste0(c("less than 0", "0-2", "2-4", "4-6", "6-8", "8-10", "more than 10"), "%"))))
 
+# yearly_interventional_means <- samples$year_partner_education2_education_parity %>% 
+#   tidyr::pivot_longer(c(y0, y1), names_to = "peer") %>% 
+#   mutate(Peer = factor(peer, levels = c("y0", "y1"), labels = c("no quota", "quota"))) %>% 
+#   group_by(year, partner_education2, education, parity, Peer) %>% 
+#   summarise(
+#     mean = mean(value), 
+#     tibble::as_tibble_row(
+#       quantile(value, probs = qs), 
+#       .name_repair = \(x) paste0("q", readr::parse_number(x)))
+#   )
+
 save(
   list = c("interventional_means", ls(pattern = "ace")), 
-  file = "W:/JouniH/peereffects/causal_effects.rda")
+  file = "causal_effects.rda")
 
 rm(d)
 gc()

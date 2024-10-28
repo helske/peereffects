@@ -80,7 +80,7 @@ f <- function(n, father_id, leave, time, education, reform2010, reform2013,
 
 
 #### Load data ####
-fulldata <- readRDS("W:/Simon/PREDLIFE/PeerEffects/Data/reform2009_longformat_Apr24.rds")
+fulldata <- readRDS("reform2009_longformat_Sept24.rds")
 
 reclassify_occup <- function(x) {
   x[is.na(x)] <- "XXXXX"
@@ -98,7 +98,7 @@ d0 <- fulldata %>%
     highEdu2, pEdu, occup, income, pWage, 
     birMon, indust, numEmp, numMen, birDate, start, start2, 
     spec_mat, vuosi, firstBir, inJob, jobStart, jobEnd, rollNumMean, rollnMenMean,
-    rollSR
+    rollSR, sector
   ) 
 rm(fulldata);gc();
 d0 <- d0 %>% 
@@ -123,7 +123,8 @@ d0 <- d0 %>%
     log_roll_men = log(rollnMenMean),
     log_roll_emp = log(rollNumMean),
     roll_sex_ratio = rollSR,
-    industry = factor(ifelse(indust %in% c(0, 99), NA, indust))
+    industry = factor(ifelse(indust %in% c(0, 99), NA, indust)),
+    sector = factor(sector, labels = c("private", "public"))
   ) %>% 
   group_by(workplace_id, occupation) %>% 
   mutate(
@@ -175,7 +176,7 @@ d <- d0 %>%
          partner_income_decile, age, partner_age, 
          region, industry, log_roll_emp, log_roll_men, roll_sex_ratio, 
          numMen, numEmp, first_birth = firstBir, spec_mat, leave_start, 
-         leave_length) 
+         leave_length, sector) 
 rm(d0);gc();
 length(unique(d$workplace_id)) #38162
 length(unique(d$group_id)) #53908
@@ -282,6 +283,8 @@ d <- d %>%
       labels = c("lower", "same", "higher")),
     education = factor(education, levels = 1:4, labels = edulevels),
     partner_education = factor(partner_education, levels = 1:4, labels = edulevels),
+    partner_education2 = factor(partner_education %in% c("Basic", "Upper Secondary"),
+                                levels = c(TRUE, FALSE), labels = c("low", "high")),
     education_lag = factor(education_lag, levels = 1:4, labels = edulevels),
     partner_higher_income = factor(partner_log_income > log_income, 
                                    labels = c("lower", "higher")),
@@ -371,7 +374,7 @@ d <- d %>%
   droplevels()
 
 
-saveRDS(d, file = "W:/JouniH/peereffects/data.rds")
+saveRDS(d, file = "data.rds")
 
 nrow(d) # 123074 fathers
 length(unique(d$workplace_id)) # 28932  workplaces

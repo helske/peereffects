@@ -9,7 +9,56 @@ set.seed(chain_id)
 library(mockthat)
 local_mock(`rstan:::is_dir_writable` = function(path) TRUE, mock_env = "rstan")
 
-d <- readRDS("W:/JouniH/peereffects/data.rds") 
+d <- readRDS("data.rds") 
+
+# Alternative design matrix with some additional/alternative terms based on 
+# reviewers comments.
+# However, the main model does not use this as this did not change the results
+# X <- d %>%
+#   model.matrix(
+#     ~ month + 
+#       industry + 
+#       sector + # new
+#       region + 
+#       occupation +
+#       log_roll_emp + 
+#       roll_sex_ratio +
+#       education +
+#       partner_education +
+#       # education_difference_partner + #removed
+#       education_difference_peer +
+#       partner_education2 + # new
+#       education : partner_education + # new
+#       income_decile +
+#       partner_income_decile +
+#       partner_higher_income +
+#       age + 
+#       partner_age +
+#       reform2013 * income_decile +
+#       reform2013 * education +
+#       reform2013 : partner_education2 + # new
+#       reform2013 : education : partner_education2 + # new
+#       reform2013 * industry + 
+#       before_2010reform_lag +
+#       before_2013reform_lag +
+#       # for those who have earlier children
+#       own_previous_birth_peer_timing * education +
+#       (reform2013 +
+#          education +
+#          reform2013 : education + # new
+#          reform2013 : partner_education2 + # new
+#          reform2013 : education : partner_education2 + # new
+#          sector + # new
+#          industry +
+#          age + 
+#          income_decile +
+#          log_roll_emp +
+#          before_2010reform_lag +
+#          before_2013reform_lag +
+#          # for those who have earlier children
+#          own_previous_birth_peer_timing
+#       ) * peer_leave,
+#     data = .)
 
 X <- d %>%
   model.matrix(
@@ -71,7 +120,7 @@ K_past <- length(unique(past_leaves))
 rm(d);gc()
 
 model <- stan_model(
-  "W:/JouniH/peereffects/model.stan",
+  "model.stan",
   allow_optimizations = TRUE
 )
 fit <- sampling(
@@ -97,7 +146,7 @@ fit <- sampling(
   iter = n_samples + n_warmup, warmup = n_warmup, 
   control = list(adapt_delta = 0.95),
   save_warmup = FALSE, include = FALSE,
-  sample_file = paste0("W:/JouniH/peereffects/posterior_samples_", chain_id, ".csv"),
+  sample_file = paste0("posterior_samples_", chain_id, ".csv"),
 )
-saveRDS(fit, file = paste0("W:/JouniH/peereffects/fit_model_", chain_id, ".rds")) 
+saveRDS(fit, file = paste0("fit_model_", chain_id, ".rds")) 
 rm(fit);gc()
