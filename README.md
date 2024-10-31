@@ -2,6 +2,10 @@ Codes and data descriptives for *Heterogeneous workplace peer effects in
 fathers’ parental leave uptake in Finland*
 ================
 
+- GitHub supplement A: File `descriptives.pdf` contains the descriptive statistics of the data used in the paper.
+- GitHub supplement B: File `variables.pdf` contains descriptions of the variables used in the paper.
+- GitHub supplement C: File `reform_restriction.pdf` contains results from the model focusing on focal fathers eligible for 2013 reform.
+- GitHub supplement D: File `timegap_restriction.pdf` contains results from the model which restricted the sample based on the time gap between births.
 - File `sample_data_construction.R` contains the code used to create the
   data for the modelling, based on the full sample created in
   `full_data_construction.R`. The source data is only accessible via
@@ -18,9 +22,6 @@ fathers’ parental leave uptake in Finland*
 - File `causal_effects.R` was be used to compute the causal effect
   estimates, and `figures.R` was used to create the figures of the paper
   and supplementary material.
-- File `descriptives.pdf` contains the descriptive statistics of the data used in the paper.
-- File `variables.pdf` contains descriptions of the variables used in the paper.
-- File `reform_restriction.pdf` contains results from the model focusing on focal fathers eligible for 2013 reform.
-- File `timegap_restriction.pdf` contains results from the model which restricted the sample based on the time gap between births.
+
 
 
