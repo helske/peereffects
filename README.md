@@ -18,8 +18,8 @@ fathers’ parental leave uptake in Finland*
 - File `causal_effects.R` was be used to compute the causal effect
   estimates, and `figures.R` was used to create the figures of the paper
   and supplementary material.
-- File `industry_classifications.pdf` contains the industry classification used in the paper.
 - File `descriptives.pdf` contains the descriptive statistics of the data used in the paper.
+- File `variables.pdf` contains descriptions of the variables used in the paper.
 
 
 
