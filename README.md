@@ -20,6 +20,7 @@ fathers’ parental leave uptake in Finland*
   and supplementary material.
 - File `descriptives.pdf` contains the descriptive statistics of the data used in the paper.
 - File `variables.pdf` contains descriptions of the variables used in the paper.
-
+- File `reform_restriction.pdf` contains results from the model focusing on focal fathers eligible for 2013 reform.
+- File `timegap_restriction.pdf` contains results from the model which restricted the sample based on the time gap between births.
 
 
