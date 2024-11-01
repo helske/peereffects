@@ -322,3 +322,39 @@ aces$past_leaves_education_parity %>%
   facet_wrap(~education)
 ggsave("figures/ace_earlier_experienced_colors.png",
        width = 180, height = 120, unit = "mm", dpi = 300)
+
+yearly_interventional_means %>% filter(parity == "0") %>% 
+  mutate(time = as.Date(paste0(year, "-1-1"))) %>% 
+  mutate(education = ordered(education, levels = edu_levels)) %>% 
+  ggplot(aes(time, mean)) + 
+  geom_ribbon(aes(ymin = q2.5, ymax = q97.5, 
+                  fill = Peer), alpha = alpha) +
+  geom_vline(xintercept = as.Date("2013-01-01"), linetype = "dashed", 
+             linewidth = 0.25) +
+  geom_line(aes(colour = Peer), linewidth = 0.5) +
+  facet_wrap(~ education) + xlab("Year") + ylab("E(quota | do(peer))") +
+  scale_fill_paletteer_d("suffrager::classic") + 
+  scale_colour_paletteer_d("suffrager::classic") + 
+  scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.spacing.x = unit(25, unit = "pt")) +
+  ylim(c(0.1, 0.8))
+ggsave("figures/yearly_expected_values_fb_colors.png",
+       width = 180, height = 120, unit = "mm", dpi = 300)
+
+yearly_interventional_means %>% filter(parity == "1+") %>% 
+  mutate(time = as.Date(paste0(year, "-1-1"))) %>% 
+  mutate(education = ordered(education, levels = edu_levels)) %>% 
+  ggplot(aes(time, mean)) + 
+  geom_ribbon(aes(ymin = q2.5, ymax = q97.5, 
+                  fill = Peer), alpha = alpha) +
+  geom_vline(xintercept = as.Date("2013-01-01"), linetype = "dashed", 
+             linewidth = 0.25) +
+  geom_line(aes(colour = Peer), linewidth = 0.5) +
+  facet_wrap(~ education) + xlab("Year") + ylab("E(quota | do(peer))") +
+  scale_fill_paletteer_d("suffrager::classic") + 
+  scale_colour_paletteer_d("suffrager::classic") + 
+  scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.spacing.x = unit(25, unit = "pt")) +
+  ylim(c(0.1, 0.8))
+ggsave("figures/yearly_expected_values_experienced_colors.png",
+       width = 180, height = 120, unit = "mm", dpi = 300)

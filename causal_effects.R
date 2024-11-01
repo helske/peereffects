@@ -152,7 +152,10 @@ d <- d %>% mutate(
   parity = factor(first_birth, levels = 1:0, labels = c("0", "1+")),
   before_2013_reform = factor(reform2013, labels = c("before", "after")),
   past_leaves = n_past_leave_takers,
-  timegap = timegap_months
+  timegap = timegap_months,
+  partner_education2 = factor(
+    partner_education %in% c("Basic", "Upper Secondary"),
+    levels = c(TRUE, FALSE), labels = c("low", "high"))
 )
 
 
@@ -167,10 +170,12 @@ conditions <- list(
   c("year", "past_leaves", "education", "parity"),
   c("education_difference_partner", "education", "parity"),
   c("partner_higher_income", "education", "parity"),
-  c("year", "education", "parity")
-  # additional conditions for interaction model
-  # , c("year", "partner_education2", "education", "parity"),
-  # c("year", "past_leaves", "partner_education2", "education", "parity"),
+  c("year", "education", "parity"),
+  c("year", "partner_education2", "education", "parity"),
+  c("before_2013_reform", "partner_education2", "education", "parity"),
+  c("year", "past_leaves", "partner_education2", "education", "parity")
+  # additional conditions for model with sector
+  # ,
   # c("before_2013_reform", "education", "sector", "parity"),
   # c("past_leaves", "education", "sector", "parity")
 )
@@ -206,6 +211,26 @@ interventional_means <- samples$month_year_education_parity %>%
   tidyr::pivot_longer(c(y0, y1), names_to = "peer") %>% 
   mutate(Peer = factor(peer, levels = c("y0", "y1"), labels = c("no quota", "quota"))) %>% 
   group_by(month, year, education, parity, Peer) %>% 
+  summarise(
+    mean = mean(value), 
+    tibble::as_tibble_row(
+      quantile(value, probs = qs), 
+      .name_repair = \(x) paste0("q", readr::parse_number(x)))
+  )
+yearly_interventional_means <- samples$year_education_parity %>% 
+  tidyr::pivot_longer(c(y0, y1), names_to = "peer") %>% 
+  mutate(Peer = factor(peer, levels = c("y0", "y1"), labels = c("no quota", "quota"))) %>% 
+  group_by(year, education, parity, Peer) %>% 
+  summarise(
+    mean = mean(value), 
+    tibble::as_tibble_row(
+      quantile(value, probs = qs), 
+      .name_repair = \(x) paste0("q", readr::parse_number(x)))
+  )
+yearly_interventional_means2 <- samples$year_partner_education2_education_parity %>% 
+  tidyr::pivot_longer(c(y0, y1), names_to = "peer") %>% 
+  mutate(Peer = factor(peer, levels = c("y0", "y1"), labels = c("no quota", "quota"))) %>% 
+  group_by(year, partner_education2, education, parity, Peer) %>% 
   summarise(
     mean = mean(value), 
     tibble::as_tibble_row(
@@ -248,19 +273,8 @@ ace_magnitude_prob <- samples$year_education_parity %>%
     between, levels = 7:1, 
     labels = rev(paste0(c("less than 0", "0-2", "2-4", "4-6", "6-8", "8-10", "more than 10"), "%"))))
 
-# yearly_interventional_means <- samples$year_partner_education2_education_parity %>% 
-#   tidyr::pivot_longer(c(y0, y1), names_to = "peer") %>% 
-#   mutate(Peer = factor(peer, levels = c("y0", "y1"), labels = c("no quota", "quota"))) %>% 
-#   group_by(year, partner_education2, education, parity, Peer) %>% 
-#   summarise(
-#     mean = mean(value), 
-#     tibble::as_tibble_row(
-#       quantile(value, probs = qs), 
-#       .name_repair = \(x) paste0("q", readr::parse_number(x)))
-#   )
-
 save(
-  list = c("interventional_means", ls(pattern = "ace")), 
+  list = c("interventional_means", pattern("yearly_inter"), ls(pattern = "ace")), 
   file = "causal_effects.rda")
 
 rm(d)
