@@ -1,122 +1,133 @@
 
 library(dplyr)
 library(rstan)
+library(forcats)
 
-compute_direct_effects <- function(samples, d, condition_on) {
+compute_direct_effects <- function(samples, d, condition_on, nsim) {
   
   inv_logit <- function(x) {
     x <- exp(x)
     x / (1 + x)
   }
   
-  beta <- posterior::draws_of(samples$beta)
-  mu <- posterior::draws_of(samples$mu)
-  u <- posterior::draws_of(samples$sigma_u * samples$u_std)
-  beta_timegap <- posterior::draws_of(samples$beta_timegap)
-  beta_past <- posterior::draws_of(samples$beta_past)
-  beta_past_peer <- posterior::draws_of(samples$beta_past_peer)
-  nsim <- nrow(beta)
+  beta <- samples$beta
+  mu <- samples$mu
+  u <- samples$u
+  beta_timegap_f <- samples$beta_timegap_f
+  beta_timegap_peer_f <- samples$beta_timegap_peer_f
+  beta_past_f <- samples$beta_past_f
+  beta_past_peer_f <- samples$beta_past_peer_f
+  beta_timegap_e <- samples$beta_timegap_e
+  beta_timegap_peer_e <- samples$beta_timegap_peer_e
+  beta_past_e <- samples$beta_past_e
+  beta_past_peer_e <- samples$beta_past_peer_e
+  
+  if (missing(nsim)) nsim <- nrow(beta)
   rm(samples);gc()
-  # for alternative model with more interaction terms regarding education,
-  # replace these model.matrix calls with the one commented out in 
-  # model_estimation.R
-  X0 <- d %>% mutate(peer_leave = 0) %>% 
+  
+  X0 <- d |> mutate(peer_leave = 0) |> 
     model.matrix(
       ~ month + 
-        industry + 
+        roll_sex_ratio + 
         region + 
         occupation +
-        log_roll_emp + 
-        roll_sex_ratio +
-        education +
-        partner_education +
-        education_difference_partner +
-        education_difference_peer +
-        income_decile +
-        partner_income_decile +
-        partner_higher_income +
-        age + 
-        partner_age +
-        reform2013 * income_decile +
-        reform2013 * education +
-        reform2013 * industry + 
-        before_2010reform_lag +
-        before_2013reform_lag +
-        # for those who have earlier children
-        own_previous_birth_peer_timing * education +
-        (reform2013 +
-           education +
-           industry +
-           age + 
-           income_decile +
-           log_roll_emp +
-           before_2010reform_lag +
-           before_2013reform_lag +
-           # for those who have earlier children
-           own_previous_birth_peer_timing
-        ) * peer_leave,
-      data = .)
-  X1 <- d %>% mutate(peer_leave = 1) %>% 
+        age * partner_age + 
+        # interactions and main effects with the 2013 reform
+        reform2013 * (
+          education +
+            partner_education + 
+            income_decile * partner_higher_income +
+            partner_income_decile + 
+            industry + 
+            sector
+        ) +
+        # interactions and main effects with the peer
+        peer_leave * (
+          reform2013 + 
+            education * partner_education + 
+            income_decile * partner_higher_income +
+            partner_income_decile + 
+            education_peer + 
+            sector + 
+            log_roll_emp
+        ) +
+        # extra terms for experienced fathers, experienced_extra = own_leave:reform2013_lag:reform2013
+        experienced + 
+        experienced:experienced_extra +
+        experienced:experienced_extra:education + 
+        experienced:income_decile + 
+        experienced:peer_leave +
+        experienced:reform2013:peer_leave + 
+        experienced:education:peer_leave,
+      data = _)
+  
+  X1 <- d |> mutate(peer_leave = 1) |> 
     model.matrix(
       ~ month + 
-        industry + 
+        roll_sex_ratio + 
         region + 
         occupation +
-        log_roll_emp + 
-        roll_sex_ratio +
-        education +
-        partner_education +
-        education_difference_partner +
-        education_difference_peer +
-        income_decile +
-        partner_income_decile +
-        partner_higher_income +
-        age + 
-        partner_age +
-        reform2013 * income_decile +
-        reform2013 * education +
-        reform2013 * industry + 
-        before_2010reform_lag +
-        before_2013reform_lag +
-        # for those who have earlier children
-        own_previous_birth_peer_timing * education +
-        (reform2013 +
-           education +
-           industry +
-           age + 
-           income_decile +
-           log_roll_emp +
-           before_2010reform_lag +
-           before_2013reform_lag +
-           # for those who have earlier children
-           own_previous_birth_peer_timing
-        ) * peer_leave,
-      data = .)
+        age * partner_age + 
+        # interactions and main effects with the 2013 reform
+        reform2013 * (
+          education +
+            partner_education + 
+            income_decile * partner_higher_income +
+            partner_income_decile + 
+            industry + 
+            sector
+        ) +
+        # interactions and main effects with the peer
+        peer_leave * (
+          reform2013 + 
+            education * partner_education + 
+            income_decile * partner_higher_income +
+            partner_income_decile + 
+            education_peer + 
+            sector + 
+            log_roll_emp
+        ) +
+        # extra terms for experienced fathers, experienced_extra = own_leave:reform2013_lag:reform2013
+        experienced + 
+        experienced:experienced_extra +
+        experienced:experienced_extra:education + 
+        experienced:income_decile + 
+        experienced:peer_leave +
+        experienced:reform2013:peer_leave + 
+        experienced:education:peer_leave,
+      data = _)
   X0 <- X0[, -1]
   X1 <- X1[, -1]
-  peer_idx <- grep("peer_leave", colnames(X0))
-  X0 <- cbind(X0[, -peer_idx], X0[, peer_idx])
-  X1 <- cbind(X1[, -peer_idx], X1[, peer_idx])
-  
-  workplace <- as.integer(factor(d %>% pull(workplace_id)))
-  own_after_peer <- d %>% pull(own_after_peer)
-  time_index <- d %>% pull(time)
+  idx_f <- which(d$first_birth == 1)
+  idx_e <- which(d$first_birth == 0)
+  workplace <- d$workplace_id
+  time_index <- d$time
   time_index <- time_index - min(time_index) + 1
-  timegap <- as.integer(d %>% pull(timegap))
-  past_leaves <- as.integer(d %>% pull(past_leaves))
-  conds <- lapply(condition_on, function(x) forcats::fct_cross(!!!d[x]))
+  time_index_f <- time_index[idx_f]
+  time_index_e <- time_index[idx_e]
+  timegap <- as.integer(d$timegap_months)
+  timegap_f <- timegap[idx_f]
+  timegap_e <- timegap[idx_e]
+  past_leaves <- as.integer(d$past_leaves)
+  past_leaves_f <- past_leaves[idx_f]
+  past_leaves_e <- past_leaves[idx_e]
+  d <- data.frame(d)
+  conds <- lapply(condition_on, function(x) fct_cross(!!!d[x]))
   cond_levels <- lapply(conds, levels)
   n_levels <- lengths(cond_levels)
   conds <- lapply(conds, as.integer)
-  
-  idx <- lapply(1:length(conds), function(j) lapply(1:n_levels[j], function(i) which(conds[[j]] == i & own_after_peer == 0)))
+  idx <- lapply(1:length(conds), function(j) lapply(1:n_levels[j], function(i) which(conds[[j]] == i)))
   ymeans0 <- ymeans1 <- vector("list", length(conds))
   for(i in 1:length(conds)) ymeans0[[i]] <- ymeans1[[i]] <- matrix(NA, n_levels[i], nsim)
   
   for(j in 1:nsim) {
-    y_ <- mu[j, time_index] + u[j, workplace] + beta_past[j, past_leaves]
-    y0 <- y_ + X0 %*% beta[j, ]
-    y1 <- y_ + X1 %*% beta[j, ] + beta_timegap[j, timegap] + beta_past_peer[j, past_leaves]
+    y <- mu[j, time_index] + u[j, workplace]
+    y[idx_f] <- y[idx_f] + beta_past_f[j, past_leaves_f] + beta_timegap_f[j, timegap_f]
+    y[idx_e] <- y[idx_e] + beta_past_e[j, past_leaves_e] + beta_timegap_e[j, timegap_e] 
+    y0 <- y + X0 %*% beta[j, ]
+    y1 <- y + X1 %*% beta[j, ]
+    y1[idx_f] <- y1[idx_f] + beta_timegap_peer_f[j, timegap_f] + beta_past_peer_f[j, past_leaves_f]
+    y1[idx_e] <- y1[idx_e] + beta_timegap_peer_e[j, timegap_e] + beta_past_peer_e[j, past_leaves_e]
     ymean0 <- inv_logit(y0)
     ymean1 <- inv_logit(y1)
     # marginalise over fathers
@@ -148,137 +159,135 @@ compute_direct_effects <- function(samples, d, condition_on) {
 
 d <- readRDS("data.rds")
 
-d <- d %>% mutate(
-  parity = factor(first_birth, levels = 1:0, labels = c("0", "1+")),
-  before_2013_reform = factor(reform2013, labels = c("before", "after")),
-  past_leaves = n_past_leave_takers,
-  timegap = timegap_months,
-  partner_education2 = factor(
-    partner_education %in% c("Basic", "Upper Secondary"),
-    levels = c(TRUE, FALSE), labels = c("low", "high"))
+d <- d |> 
+  mutate(
+    Father = factor(first_birth, levels = 1:0, labels = c("First-time", "Experienced"))
+  )
+
+
+condition_on <- list(
+  "Father",
+  "past_leaves",
+  "education",
+  "reform2013",
+  c("education", "Father"),
+  c("past_leaves", "Father"),
+  c("reform2013", "Father"),
+  c("reform2013", "education"),
+  c("month", "year", "Father"),
+  c("month", "year", "education", "Father"), 
+  c("reform2013", "education", "Father"),
+  c("past_leaves", "education", "Father"),
+  c("partner_education", "education", "Father"),
+  c("partner_higher_income", "education", "Father"),
+  c("reform2013", "partner_education", "education", "Father"),
+  c("reform2013", "education",  "partner_education"), 
+  c("reform2013", "education",  "sector"),
+  c("reform2013", "education",  "partner_education", "Father"), 
+  c("reform2013", "education",  "sector", "Father")
 )
+fit <- readRDS("fit_model.rds")
+#sumr <- posterior::as_draws(fit) |> posterior::summarise_draws()
+samples <- extract(fit)
+rm(fit);gc()
 
+samples <- compute_direct_effects(samples, d, condition_on)
 
-conditions <- list(
-  "parity",
-  c("month", "year", "education", "parity"), 
-  c("timegap", "education", "parity"),
-  c("education", "parity"),
-  c("before_2013_reform", "parity"),
-  c("before_2013_reform", "education", "parity"),
-  c("past_leaves", "education", "parity"),
-  c("year", "past_leaves", "education", "parity"),
-  c("education_difference_partner", "education", "parity"),
-  c("partner_higher_income", "education", "parity"),
-  c("year", "education", "parity"),
-  c("year", "partner_education2", "education", "parity"),
-  c("before_2013_reform", "partner_education2", "education", "parity"),
-  c("year", "past_leaves", "partner_education2", "education", "parity")
-  # additional conditions for model with sector
-  # ,
-  # c("before_2013_reform", "education", "sector", "parity"),
-  # c("past_leaves", "education", "sector", "parity")
-)
-
-# this a faster version of rstan::read_stan_csv
-# but you can use the rstan's version as well.
-source("readcsv.R")
-draws <- read_stan_csv_custom(
-  paste0("posterior_samples_", 1:4, ".csv")
-)
-
-samples <- compute_direct_effects(draws, d, condition_on = conditions)
-
-saveRDS(
-  samples, 
-  file = "causal_effect_samples.rds"
-)
-rm(draws)
+saveRDS(samples, file = "causal_effect_samples.rds")
 qs <- c(0.025, 0.975)
 
+samples$Father |> 
+  mutate(peer_effect = y1 - y0) |> 
+  group_by(iter) |> 
+  summarise(
+    difference = 
+      peer_effect[Father == "First-time"] - peer_effect[Father == "Experienced"]
+  ) |> 
+  summarise(
+    mean = mean(difference), 
+    q2.5 = quantile(difference, 0.025),
+    q97.5 = quantile(difference, 0.975),
+    first_time_bigger = mean(difference > 0)
+  )
+edu_levels <- c("Basic", "Upper secondary", "Lower tertiary", "Higher tertiary")
+samples$education_Father |> 
+  mutate(
+    education = ordered(education, levels = edu_levels),
+    peer_effect = y1 - y0
+  ) |> 
+  group_by(iter, education) |> 
+  summarise(
+    difference = peer_effect[Father == "First-time"] - peer_effect[Father == "Experienced"]
+  ) |> 
+  group_by(education) |> 
+  summarise(
+    mean = mean(difference), 
+    q2.5 = quantile(difference, 0.025),
+    q97.5 = quantile(difference, 0.975),
+    first_time_bigger = mean(difference > 0)
+  )
+
+samples$past_leaves_Father |> 
+  mutate(
+    past_leaves = ordered(past_leaves, labels = c("First-time", 1:4, "5+")),
+    peer_effect = y1 - y0
+  ) |> 
+  group_by(iter, past_leaves) |> 
+  summarise(
+    difference = peer_effect[Father == "First-time"] - peer_effect[Father == "Experienced"]
+  ) |> 
+  group_by(past_leaves) |> 
+  summarise(
+    mean = mean(difference), 
+    q2.5 = quantile(difference, 0.025),
+    q97.5 = quantile(difference, 0.975),
+    first_time_bigger = mean(difference > 0)
+  )
+
 aces <- lapply(samples, function(x) {
-  x %>% 
-    group_by(across(-c(iter, y0, y1))) %>% 
+  x |> 
+    group_by(across(-c(iter, y0, y1))) |> 
     summarise(
       mean = mean(y1 - y0), 
-      tibble::as_tibble_row(
-        quantile(y1 - y0, probs = qs), 
-        .name_repair = \(x) paste0("q", readr::parse_number(x)))
-    )
+      q2.5 = quantile(y1 - y0, 0.025),
+      q97.5 = quantile(y1 - y0, 0.975),
+      .groups = "drop")
 })
-interventional_means <- samples$month_year_education_parity %>% 
-  filter(!(year == "2010" & month == 1)) %>% 
-  tidyr::pivot_longer(c(y0, y1), names_to = "peer") %>% 
-  mutate(Peer = factor(peer, levels = c("y0", "y1"), labels = c("no quota", "quota"))) %>% 
-  group_by(month, year, education, parity, Peer) %>% 
+interventional_means <- samples$month_year_education_Father |> 
+  filter(!(year == "2010" & month == 1)) |> 
+  tidyr::pivot_longer(c(y0, y1), names_to = "Peer") |> 
+  mutate(Peer = factor(Peer, levels = c("y0", "y1"), labels = c("No quota", "Quota"))) |> 
+  group_by(month, year, education, Father, Peer) |> 
   summarise(
     mean = mean(value), 
-    tibble::as_tibble_row(
-      quantile(value, probs = qs), 
-      .name_repair = \(x) paste0("q", readr::parse_number(x)))
+    q2.5 = quantile(value, 0.025),
+    q97.5 = quantile(value, 0.975),
+    .groups = "drop"
   )
-yearly_interventional_means <- samples$year_education_parity %>% 
-  tidyr::pivot_longer(c(y0, y1), names_to = "peer") %>% 
-  mutate(Peer = factor(peer, levels = c("y0", "y1"), labels = c("no quota", "quota"))) %>% 
-  group_by(year, education, parity, Peer) %>% 
-  summarise(
-    mean = mean(value), 
-    tibble::as_tibble_row(
-      quantile(value, probs = qs), 
-      .name_repair = \(x) paste0("q", readr::parse_number(x)))
-  )
-yearly_interventional_means2 <- samples$year_partner_education2_education_parity %>% 
-  tidyr::pivot_longer(c(y0, y1), names_to = "peer") %>% 
-  mutate(Peer = factor(peer, levels = c("y0", "y1"), labels = c("no quota", "quota"))) %>% 
-  group_by(year, partner_education2, education, parity, Peer) %>% 
-  summarise(
-    mean = mean(value), 
-    tibble::as_tibble_row(
-      quantile(value, probs = qs), 
-      .name_repair = \(x) paste0("q", readr::parse_number(x)))
-  )
-ace_diff_parity_edu <-  samples$education_parity %>% 
-  group_by(education) %>% 
+
+ace_diff_father_edu <-  samples$education_Father |> 
+  group_by(education) |> 
   summarise(
     mean = mean(
-      (y1[parity == "0"] - y0[parity == "0"]) - (y1[parity == "1+"] - y0[parity == "1+"])
+      (y1[Father == "First-time"] - y0[Father == "First-time"]) - 
+        (y1[Father == "Experienced"] - y0[Father == "Experienced"])
     ),
     q2.5 = quantile(
-      (y1[parity == "0"] - y0[parity == "0"]) - (y1[parity == "1+"] - y0[parity == "1+"]),
+      (y1[Father == "First-time"] - y0[Father == "First-time"]) - 
+        (y1[Father == "Experienced"] - y0[Father == "Experienced"]),
       probs = 0.025
     ),
     q97.5 = quantile(
-      (y1[parity == "0"] - y0[parity == "0"]) - (y1[parity == "1+"] - y0[parity == "1+"]),
-      probs = 0.975)
+      (y1[Father == "First-time"] - y0[Father == "First-time"]) - 
+        (y1[Father == "Experienced"] - y0[Father == "Experienced"]),
+      probs = 0.975),
+    .groups = "drop"
   )
 
-ace_magnitude_prob <- samples$year_education_parity %>%
-  group_by(year, education, parity) %>%
-  summarise(
-    x1 = mean((y1 - y0) <= 0),
-    x2 = mean((y1 - y0) > 0 & (y1 - y0) <= 0.02),
-    x3 = mean((y1 - y0) > 0.02 & (y1 - y0) <= 0.04),
-    x4 = mean((y1 - y0) > 0.04 & (y1 - y0) <= 0.06),
-    x5 = mean((y1 - y0) > 0.06 & (y1 - y0) <= 0.08),
-    x6 = mean((y1 - y0) > 0.08 & (y1 - y0) <= 0.1),
-    x7 = mean((y1 - y0) > 0.1)
-  ) %>%
-  tidyr::pivot_longer(
-    cols = starts_with("x"),
-    names_to = "between",
-    names_pattern = "x(.*)",
-    values_to = "probability"
-  ) %>%
-  mutate(between = ordered(
-    between, levels = 7:1, 
-    labels = rev(paste0(c("less than 0", "0-2", "2-4", "4-6", "6-8", "8-10", "more than 10"), "%"))))
-
 save(
-  list = c("interventional_means", pattern("yearly_inter"), ls(pattern = "ace")), 
+  list = c("interventional_means", ls(pattern = "yearly_inter"), 
+           ls(pattern = "ace")), 
   file = "causal_effects.rda")
 
 rm(d)
 gc()
-gc()
-
-

@@ -2,7 +2,7 @@
 library(data.table)
 
 #### Load data ####
-d <- readRDS("reform2009_longformat_Sept24.rds")
+d <- readRDS("W:/Simon/PREDLIFE/PeerEffects/Data/reform2009_longformat_Sept24.rds")
 
 reclassify_occup <- function(x) {
   x[is.na(x)] <- "XXXXX"
@@ -41,8 +41,8 @@ d <- d[, .(father_id = shnro,
 # use non-rolling values for the first time points
 d[, log_roll_emp := ifelse(is.na(rollNumMean), log(numEmp), log(rollNumMean))]
 d[, roll_sex_ratio := ifelse(is.na(rollSR), numMen / numEmp, rollSR)]
-d[, numMen := NULL]
-d[, numEmp := NULL]
+#d[, numMen := NULL]
+#d[, numEmp := NULL]
 d[, rollNumMean := NULL]
 d[, rollSR := NULL]
 
@@ -154,11 +154,20 @@ cnames <- c("peer_id", "peer_leave", "peer_timegap", "peer_education",
             "peer_reform2010", "peer_reform2013", "past_leaves") 
 d[, (cnames) := f(father_id, leave, time, education, reform2010, reform2013), by = group_id]
 
+nrow(d)
+length(unique(d$workplace_id))
+length(unique(d$father_id))
+
 # use only fathers eligible to 2010 reform and child is born _after_ January 2010, 
 # and only those father's who have at least one peer
 d <- d[reform2010 == 1 & birth_date >= as.Date("2010-02-01") & !is.na(peer_leave)]
 d[, reform2010 := NULL]
 
+nrow(d)
+length(unique(d$workplace_id))
+length(unique(d$father_id))
+
+length(unique(d$group_id[d$peer_timegap==0])) # 228
 # trim groups where peer has the same birth date as focal
 # remove births either starting from first duplicate, or remove births before last duplicate
 # which ever leads to less removals when accounting for potential missing values
@@ -198,7 +207,7 @@ d[, has_missing := NULL]
 d <- d[, if(all(is.na(spec_mat))) .SD, by = group_id]
 d[, spec_mat := NULL]
 
-# remove groups where own previous child and peer had same birth date
+# remove groups where own previous child and peer had same birth date (none)
 d <- d[!(group_id %in% d[which(own_timegap == peer_timegap), group_id])]
 
 # remove industry 22 as there is only 10 fathers with that code (2 groups)
@@ -322,12 +331,167 @@ length(seq(as.Date("2010-02-01"), as.Date("2017-12-31"), by = "day"))
 length(unique(d$time))
 
 # remove extra variables
-d[, leave_length := NULL]
 d[, own_reform2010_lag := NULL]
 d[, peer_reform2010 := NULL]
 d[, peer_timegap := NULL]
 d[, own_timegap := NULL]
 d[, peer_id := NULL]
 d[, own_after_peer := NULL]
-saveRDS(d, file = "data.rds")
+saveRDS(d, file = "W:/JouniH/peereffects/May2025/data.rds")
 
+nrow(d) # 117837 births
+length(unique(d$father_id)) # 97003 fathers
+length(unique(d$workplace_id)) # 28304  workplaces
+length(unique(d$group_id)) # 38895 groups
+# 
+# d |>
+#   group_by(reform2013) |>
+#   summarise(
+#     uptake_percentage = mean(leave_length > 0),
+#     quota_uptake_percentage = mean(leave),
+#     median_leave_length = median(leave_length[leave_length > 0]),
+#     median_quota_length = median(leave_length[leave_length > 18])
+#   )
+# # A tibble: 2 x 5
+#  reform2013   uptake_percentage quota_uptake_percentage median_leave_length median_quota_length
+#  <fct>                    <dbl>                   <dbl>               <dbl>               <dbl>
+# 1 not eligible             0.867                   0.355                  18                  54
+# 2 eligible                 0.880                   0.496                  33                  53
+
+prop.table(table(d$peer_leave))
+prop.table(table(d$first_birth))
+d |>
+  group_by(reform2013, first_birth) |> 
+  summarize(median = median(leave_length))
+d |> filter(leave_length > 0) |> 
+  group_by(reform2013, first_birth) |> 
+  summarize(median = median(leave_length))
+d |> filter(leave == 1) |> 
+  group_by(reform2013, first_birth) |> 
+  summarize(median = median(leave_length))  
+
+
+d |> 
+  group_by(reform2013, peer_leave) |> 
+  summarize(prop = mean(leave))
+
+d |> 
+  group_by(reform2013, peer_leave) |> 
+  summarize(median = median(leave_length))  
+
+d |> filter(leave_length > 0 ) |> 
+  group_by(reform2013, peer_leave) |> 
+  summarize(median = median(leave_length))  
+
+d |> filter(leave == 1) |> 
+  group_by(reform2013, peer_leave) |> 
+  summarize(median = median(leave_length))  
+
+d |> 
+  group_by(own_leave_lag) |> 
+  summarize(median = median(leave_length))
+d |> 
+  group_by(own_leave_lag) |> 
+  summarize(prop = mean(leave))
+
+d |>
+  group_by(reform2013, first_birth) |> 
+  summarize(prop = mean(leave))
+
+# number of groups per workplace
+# table(d |> dplyr::group_by(workplace_id) |> dplyr::summarise(n=dplyr::n_distinct(group_id)) |> dplyr::pull(n))
+# 1     2     3     4     5     6     7     8 
+# 21301  4619  1534   582   196    61     8     3
+
+# number of observations per workplace:
+# quantile(d |> dplyr::group_by(workplace_id) |> dplyr::summarise(n=dplyr::n()) |> dplyr::pull(n), seq(0, 1, by = 0.1))
+#  0%  10%  20%  30%  40%  50%  60%  70%  80%  90% 100% 
+#   1    1    1    1    2    2    3    4    5    10   85  
+# summary(d$father)
+
+
+d |> mutate(x = year %in% 2010:2012) |> 
+  group_by(x, workplace_id) |>
+  summarise(
+    uptake_percentage = mean(leave_length > 0),
+    quota_uptake_percentage = mean(leave),
+    mean_n = mean(numEmp),
+    prop_men = mean(numMen / numEmp)
+  ) |> 
+  group_by(x) |> 
+  summarise(
+    uptake_percentage = mean(uptake_percentage),
+    quota_uptake_percentage = mean(quota_uptake_percentage),
+    median_n = median(mean_n),
+    mean_n = mean(mean_n),
+    prop_men = mean(prop_men)
+  )
+
+## appendix
+
+d |>
+  group_by(reform2013, peer_leave) |> 
+  summarize(prop = 100*mean(leave), median = median(leave_length))
+
+
+d |>
+  group_by(education, reform2013) |> 
+  summarize(prop = 100*mean(leave), median = median(leave_length))
+
+
+d |> filter(leave_length>0) |> 
+  group_by(reform2013, peer_leave) |> 
+  summarize(median = median(leave_length))
+
+
+d |>  filter(leave_length>0) |> 
+  group_by(education, reform2013) |> 
+  summarize( median = median(leave_length))
+
+
+d |> filter(leave==1) |> 
+  group_by(reform2013, peer_leave) |> 
+  summarize(median = median(leave_length))
+
+
+d |>  filter(leave==1) |> 
+  group_by(education, reform2013) |> 
+  summarize( median = median(leave_length))
+
+mean(d$first_birth)
+
+
+d |> group_by(reform2013) |> 
+  summarize(quota = mean(leave), any_leave = mean(leave_length > 0))
+d |> group_by(reform2013, first_birth) |> 
+  summarize(quota = 100*mean(leave), any_leave = 100*mean(leave_length > 0))
+
+d |> filter(leave_length > 0 ) |> 
+  group_by(reform2013) |> 
+  summarize(duration = median(leave_length))
+d |> filter(leave_length > 0 ) |> 
+  group_by(reform2013, first_birth) |> 
+  summarize(duration = median(leave_length))
+
+
+d |> filter(leave == 1) |> 
+  group_by(reform2013) |> 
+  summarize(duration = median(leave_length))
+d |> filter(leave == 1) |> 
+  group_by(reform2013, first_birth) |> 
+  summarize(duration = median(leave_length))
+
+d |> 
+  group_by(reform2013) |> 
+  summarize(quota = 100*mean(leave), any_leave = 100*mean(leave_length > 0))
+
+d |> 
+  group_by(reform2013) |> 
+  summarize(N = mean(leave), any_leave = 100*mean(leave_length > 0))
+
+prop.table(table(d$own_leave_lag[d$first_birth == 0],d$leave[d$first_birth == 0]),margin=1)
+
+d |> 
+  filter(first_birth == 0) |> 
+  group_by(own_leave_lag) |> 
+  summarise(median = median(leave_length), prop = mean(leave))
