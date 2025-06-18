@@ -107,12 +107,10 @@ pairwise_diff |>
   mutate(
     xpos = 0.2,
     Father = factor(Father, labels = c("First-time fathers", "Experienced fathers")),
-    nudge = 0.2 - 0.4 * (reform == "Before 2013 reform"),
+    nudge = 0.25 - 0.5 * (reform == "Before 2013 reform"),
     ypos = as.numeric(comparison) + nudge,
     P = paste0("P(\u0394 > 0) = ", format(round(P, 2), nsmall = 2))
   ) |> 
-  # group_by(comparison, Father) |> 
-  # mutate(xpos = mean(mean)) |> 
   ggplot(aes(mean, comparison)) + 
   geom_vline(xintercept = 0, linetype = "dashed", linewidth = 0.25) +
   geom_pointrange(aes(xmin = q2.5, xmax = q97.5, colour = reform),
@@ -123,4 +121,4 @@ pairwise_diff |>
   theme(legend.title = element_blank()) +
   geom_text(aes(x = xpos, y = ypos, label = P), size = 3.5, hjust = 0)
 
-ggsave("figures/peer_effect_difference.png", width = 10, height = 6)
+ggsave("figures/peer_effect_difference.png", width = 6.5, height = 6)
