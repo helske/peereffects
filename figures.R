@@ -80,34 +80,6 @@ aces$month_year_education_Father |>
 
 ggsave("figures/peer_effect_by_father_and_education.png", width = 6.5, height = 6)
 
-intv_colors <- c("#008080", "#FF6F61")
-interventional_means |> 
-  mutate(
-    Father = ordered(Father, levels = c("First-time", "Experienced")),
-    time = as.Date(paste0(year, "-", month, "-1")),
-    education = ordered(education, levels = edu_levels)
-  ) |> 
-  ggplot(aes(time, mean)) + 
-  geom_ribbon(aes(ymin = q2.5, ymax = q97.5, 
-                  fill = Peer, alpha = Father)) +
-  geom_vline(xintercept = as.Date("2013-01-01"), linetype = "dashed", 
-             linewidth = 0.25) +
-  geom_line(aes(colour = Peer, alpha = Father), linewidth = 0.5) +
-  facet_wrap(~ education) + xlab("Time") + ylab("E(quota | do(peer))") +
-  scale_x_date(date_breaks = "years", date_labels = "%Y", minor_breaks = NULL) +
-  scale_colour_manual(values = intv_colors) + 
-  scale_fill_manual(values = intv_colors) + 
-  scale_alpha_manual(values = c(0.6, 0.3), labels = c("No quota", "Quota")) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 12)
-    ) +
-  guides(
-    fill = guide_legend("Experienced", override.aes = list(alpha = 0.3, fill = intv_colors)),
-    colour = guide_legend("Experienced"),
-    alpha = guide_legend("First-time", override.aes = list(alpha = 0.6, fill = intv_colors))
-  )
-ggsave("figures/expected_values.png", width = 6.5, height = 6)
-
 # Effect of past leaves
 aces$past_leaves_education_Father |> 
   ungroup() |> 
@@ -127,3 +99,28 @@ aces$past_leaves_education_Father |>
   facet_wrap(~ education)
 ggsave("figures/ace_past_leaves_and_education.png", width = 6.5, height = 6)
 
+# Differences in peer effects
+theme_update(axis.text.y = element_text(size = 12, hjust = 0))
+pairwise_diff <- readRDS("pairwise_diff.rds")
+pairwise_diff |> 
+  ungroup() |> 
+  mutate(
+    xpos = 0.2,
+    Father = factor(Father, labels = c("First-time fathers", "Experienced fathers")),
+    nudge = 0.2 - 0.4 * (reform == "Before 2013 reform"),
+    ypos = as.numeric(comparison) + nudge,
+    P = paste0("P(\u0394 > 0) = ", format(round(P, 2), nsmall = 2))
+  ) |> 
+  # group_by(comparison, Father) |> 
+  # mutate(xpos = mean(mean)) |> 
+  ggplot(aes(mean, comparison)) + 
+  geom_vline(xintercept = 0, linetype = "dashed", linewidth = 0.25) +
+  geom_pointrange(aes(xmin = q2.5, xmax = q97.5, colour = reform),
+                  position = position_dodge(0.3), size = 0.3) +
+  facet_grid(~ Father) +
+  paletteer::scale_colour_paletteer_d("suffrager::classic") + 
+  ylab(NULL) + xlab("Percentage point difference \u0394 of the average peer effect") +
+  theme(legend.title = element_blank()) +
+  geom_text(aes(x = xpos, y = ypos, label = P), size = 3.5, hjust = 0)
+
+ggsave("figures/peer_effect_difference.png", width = 10, height = 6)
